@@ -107,12 +107,12 @@ public class QueueMessageHandler extends AbstractMethodMessageHandler<QueueMessa
 				this.logger.warn("Listener method '" + method.getName() + "' in type '" + method.getDeclaringClass().getName() +
 						"' has deletion policy 'NEVER' but does not have a parameter of type Acknowledgment.");
 			}
-			return new MappingInformation(resolveDestinationNames(sqsListenerAnnotation.value()), sqsListenerAnnotation.deletionPolicy());
+			return new MappingInformation(resolveDestinationNames(sqsListenerAnnotation.value()), sqsListenerAnnotation.deletionPolicy(), sqsListenerAnnotation.poolSize());
 		}
 
 		MessageMapping messageMappingAnnotation = AnnotationUtils.findAnnotation(method, MessageMapping.class);
 		if (messageMappingAnnotation != null && messageMappingAnnotation.value().length > 0) {
-			return new MappingInformation(resolveDestinationNames(messageMappingAnnotation.value()), SqsMessageDeletionPolicy.ALWAYS);
+			return new MappingInformation(resolveDestinationNames(messageMappingAnnotation.value()), SqsMessageDeletionPolicy.ALWAYS, -1);
 		}
 
 		return null;
@@ -232,9 +232,12 @@ public class QueueMessageHandler extends AbstractMethodMessageHandler<QueueMessa
 
 		private final SqsMessageDeletionPolicy deletionPolicy;
 
-		public MappingInformation(Set<String> logicalResourceIds, SqsMessageDeletionPolicy deletionPolicy) {
+		private final int poolSize;
+
+		public MappingInformation(Set<String> logicalResourceIds, SqsMessageDeletionPolicy deletionPolicy, int poolSize) {
 			this.logicalResourceIds = Collections.unmodifiableSet(logicalResourceIds);
 			this.deletionPolicy = deletionPolicy;
+			this.poolSize = poolSize;
 		}
 
 		public Set<String> getLogicalResourceIds() {
@@ -243,6 +246,10 @@ public class QueueMessageHandler extends AbstractMethodMessageHandler<QueueMessa
 
 		public SqsMessageDeletionPolicy getDeletionPolicy() {
 			return this.deletionPolicy;
+		}
+
+		public int getPoolSize() {
+			return poolSize;
 		}
 
 		@SuppressWarnings("NullableProblems")

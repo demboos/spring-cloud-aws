@@ -75,4 +75,9 @@ public @interface SqsListener {
 	 */
 	SqsMessageDeletionPolicy deletionPolicy() default SqsMessageDeletionPolicy.NO_REDRIVE;
 
+	/**
+	 *
+	 * Defines the number of threads that should process messages for the queue attached to this handler
+	 */
+	int poolSize() default -1;
 }

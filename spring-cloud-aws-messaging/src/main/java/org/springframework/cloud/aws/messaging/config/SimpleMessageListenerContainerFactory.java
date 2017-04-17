@@ -25,6 +25,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.core.DestinationResolver;
 import org.springframework.util.Assert;
+import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 
 /**
  * @author Alain Sahli
@@ -35,6 +36,8 @@ public class SimpleMessageListenerContainerFactory {
 	private AsyncTaskExecutor taskExecutor;
 
 	private Integer maxNumberOfMessages;
+
+	private Integer processingThreadsPerQueue;
 
 	private Integer visibilityTimeout;
 
@@ -75,6 +78,16 @@ public class SimpleMessageListenerContainerFactory {
 	 */
 	public void setMaxNumberOfMessages(Integer maxNumberOfMessages) {
 		this.maxNumberOfMessages = maxNumberOfMessages;
+	}
+
+	/**
+	 * Configure the default number of threads that will process messages retrieved from the queue. This value can be
+	 * overwritten by per-queue setting using {@link SqsListener} poolSize property.
+	 *
+	 * @param processingThreadsPerQueue number of threads per queue
+	 */
+	public void setProcessingThreadsPerQueue(Integer processingThreadsPerQueue) {
+		this.processingThreadsPerQueue = processingThreadsPerQueue;
 	}
 
 	/**
@@ -208,6 +221,9 @@ public class SimpleMessageListenerContainerFactory {
 		}
 		if (this.maxNumberOfMessages != null) {
 			simpleMessageListenerContainer.setMaxNumberOfMessages(this.maxNumberOfMessages);
+		}
+		if (this.processingThreadsPerQueue != null) {
+			simpleMessageListenerContainer.setProcessingThreadsPerQueue(this.processingThreadsPerQueue);
 		}
 		if (this.visibilityTimeout != null) {
 			simpleMessageListenerContainer.setVisibilityTimeout(this.visibilityTimeout);

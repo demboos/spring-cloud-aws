@@ -267,7 +267,7 @@ abstract class AbstractMessageListenerContainer implements InitializingBean, Dis
 
 			for (QueueMessageHandler.MappingInformation mappingInformation : this.messageHandler.getHandlerMethods().keySet()) {
 				for (String queue : mappingInformation.getLogicalResourceIds()) {
-					this.registeredQueues.put(queue, queueAttributes(queue, mappingInformation.getDeletionPolicy()));
+					this.registeredQueues.put(queue, queueAttributes(queue, mappingInformation.getDeletionPolicy(), mappingInformation.getPoolSize()));
 				}
 			}
 
@@ -286,7 +286,7 @@ abstract class AbstractMessageListenerContainer implements InitializingBean, Dis
 		doStart();
 	}
 
-	private QueueAttributes queueAttributes(String queue, SqsMessageDeletionPolicy deletionPolicy) {
+	private QueueAttributes queueAttributes(String queue, SqsMessageDeletionPolicy deletionPolicy, int poolSize) {
 		String destinationUrl;
 		try {
 			destinationUrl = getDestinationResolver().resolveDestination(queue);
@@ -299,7 +299,7 @@ abstract class AbstractMessageListenerContainer implements InitializingBean, Dis
 				.withAttributeNames(QueueAttributeName.RedrivePolicy));
 		boolean hasRedrivePolicy = queueAttributes.getAttributes().containsKey(QueueAttributeName.RedrivePolicy.toString());
 
-		return new QueueAttributes(hasRedrivePolicy, deletionPolicy, destinationUrl, getMaxNumberOfMessages(), getVisibilityTimeout(), getWaitTimeOut());
+		return new QueueAttributes(hasRedrivePolicy, deletionPolicy, destinationUrl, getMaxNumberOfMessages(), getVisibilityTimeout(), getWaitTimeOut(), poolSize);
 	}
 
 	@Override
@@ -344,15 +344,17 @@ abstract class AbstractMessageListenerContainer implements InitializingBean, Dis
 		private final Integer maxNumberOfMessages;
 		private final Integer visibilityTimeout;
 		private final Integer waitTimeOut;
+		private final Integer poolSize;
 
 		public QueueAttributes(boolean hasRedrivePolicy, SqsMessageDeletionPolicy deletionPolicy, String destinationUrl,
-							   Integer maxNumberOfMessages, Integer visibilityTimeout, Integer waitTimeOut) {
+							   Integer maxNumberOfMessages, Integer visibilityTimeout, Integer waitTimeOut, Integer poolSize) {
 			this.hasRedrivePolicy = hasRedrivePolicy;
 			this.deletionPolicy = deletionPolicy;
 			this.destinationUrl = destinationUrl;
 			this.maxNumberOfMessages = maxNumberOfMessages;
 			this.visibilityTimeout = visibilityTimeout;
 			this.waitTimeOut = waitTimeOut;
+			this.poolSize = poolSize;
 		}
 
 		public boolean hasRedrivePolicy() {
@@ -383,6 +385,10 @@ abstract class AbstractMessageListenerContainer implements InitializingBean, Dis
 
 		public SqsMessageDeletionPolicy getDeletionPolicy() {
 			return this.deletionPolicy;
+		}
+
+		public Integer getPoolSize() {
+			return poolSize;
 		}
 	}
 }
